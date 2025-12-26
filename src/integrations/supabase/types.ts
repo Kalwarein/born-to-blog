@@ -109,8 +109,12 @@ export type Database = {
           id: string
           image_url: string | null
           post_type: Database["public"]["Enums"]["post_type"]
+          reading_time: number | null
+          status: string | null
+          subtitle: string | null
           title: string
           updated_at: string
+          view_count: number | null
         }
         Insert: {
           author_id: string
@@ -121,8 +125,12 @@ export type Database = {
           id?: string
           image_url?: string | null
           post_type?: Database["public"]["Enums"]["post_type"]
+          reading_time?: number | null
+          status?: string | null
+          subtitle?: string | null
           title: string
           updated_at?: string
+          view_count?: number | null
         }
         Update: {
           author_id?: string
@@ -133,8 +141,12 @@ export type Database = {
           id?: string
           image_url?: string | null
           post_type?: Database["public"]["Enums"]["post_type"]
+          reading_time?: number | null
+          status?: string | null
+          subtitle?: string | null
           title?: string
           updated_at?: string
+          view_count?: number | null
         }
         Relationships: []
       }
@@ -233,10 +245,11 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_view_count: { Args: { post_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"
-      post_type: "blog" | "post"
+      post_type: "news" | "blog" | "announcement" | "post"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -365,7 +378,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
-      post_type: ["blog", "post"],
+      post_type: ["news", "blog", "announcement", "post"],
     },
   },
 } as const
