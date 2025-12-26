@@ -4,19 +4,28 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, Image, X } from "lucide-react";
+import { Plus, Edit, Trash2, Image, X, Clock, Eye, FileText } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Post {
   id: string;
   title: string;
   content: string;
   excerpt: string | null;
+  subtitle: string | null;
   image_url: string | null;
   post_type: string;
   featured: boolean;
   created_at: string;
+  reading_time: number;
+  view_count: number;
+  status: string;
 }
+
+type PostType = "news" | "blog" | "announcement" | "post";
+type PostStatus = "draft" | "published";
 
 const AdminPosts = () => {
   const { user } = useAuth();
@@ -27,8 +36,10 @@ const AdminPosts = () => {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [formData, setFormData] = useState({
     title: "",
+    subtitle: "",
     content: "",
-    post_type: "post" as "blog" | "post",
+    post_type: "post" as PostType,
+    status: "published" as PostStatus,
     featured: false,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -46,7 +57,7 @@ const AdminPosts = () => {
       .order("created_at", { ascending: false });
 
     if (!error && data) {
-      setPosts(data);
+      setPosts(data as Post[]);
     }
     setLoading(false);
   };
@@ -94,6 +105,16 @@ const AdminPosts = () => {
       return;
     }
 
+    // Require image for featured posts
+    if (formData.featured && !imagePreview && !editingPost?.image_url) {
+      toast({
+        title: "Image required",
+        description: "Featured posts require a cover image",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -108,9 +129,11 @@ const AdminPosts = () => {
 
       const postData = {
         title: formData.title,
+        subtitle: formData.subtitle || null,
         content: formData.content,
         excerpt: formData.content.slice(0, 150),
         post_type: formData.post_type,
+        status: formData.status,
         featured: formData.featured,
         image_url: imageUrl,
         author_id: user.id,
@@ -147,8 +170,10 @@ const AdminPosts = () => {
     setEditingPost(post);
     setFormData({
       title: post.title,
+      subtitle: post.subtitle || "",
       content: post.content,
-      post_type: post.post_type as "blog" | "post",
+      post_type: post.post_type as PostType,
+      status: (post.status || "published") as PostStatus,
       featured: post.featured,
     });
     setImagePreview(post.image_url);
@@ -171,12 +196,33 @@ const AdminPosts = () => {
     setEditingPost(null);
     setFormData({
       title: "",
+      subtitle: "",
       content: "",
       post_type: "post",
+      status: "published",
       featured: false,
     });
     setImageFile(null);
     setImagePreview(null);
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case "news":
+        return "bg-red-500/10 text-red-600 border-red-500/20";
+      case "blog":
+        return "bg-blue-500/10 text-blue-600 border-blue-500/20";
+      case "announcement":
+        return "bg-amber-500/10 text-amber-600 border-amber-500/20";
+      default:
+        return "bg-primary/10 text-primary border-primary/20";
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    return status === "published"
+      ? "bg-green-500/10 text-green-600 border-green-500/20"
+      : "bg-yellow-500/10 text-yellow-600 border-yellow-500/20";
   };
 
   if (loading) {
@@ -225,6 +271,17 @@ const AdminPosts = () => {
                 </div>
 
                 <div>
+                  <label className="text-sm font-medium mb-2 block">Subtitle (optional)</label>
+                  <Input
+                    value={formData.subtitle}
+                    onChange={(e) =>
+                      setFormData({ ...formData, subtitle: e.target.value })
+                    }
+                    placeholder="Brief summary or tagline"
+                  />
+                </div>
+
+                <div>
                   <label className="text-sm font-medium mb-2 block">
                     Content (min 200 characters)
                   </label>
@@ -250,34 +307,53 @@ const AdminPosts = () => {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          post_type: e.target.value as "blog" | "post",
+                          post_type: e.target.value as PostType,
                         })
                       }
                       className="w-full h-12 px-4 rounded-xl border-2 border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary"
                     >
                       <option value="post">Post</option>
                       <option value="blog">Blog</option>
+                      <option value="news">News</option>
+                      <option value="announcement">Announcement</option>
                     </select>
                   </div>
 
-                  <div className="flex items-center gap-2 pt-6">
-                    <input
-                      type="checkbox"
-                      id="featured"
-                      checked={formData.featured}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Status</label>
+                    <select
+                      value={formData.status}
                       onChange={(e) =>
-                        setFormData({ ...formData, featured: e.target.checked })
+                        setFormData({
+                          ...formData,
+                          status: e.target.value as PostStatus,
+                        })
                       }
-                      className="w-5 h-5 rounded border-2 border-input accent-primary"
-                    />
-                    <label htmlFor="featured" className="text-sm font-medium">
-                      Featured post
-                    </label>
+                      className="w-full h-12 px-4 rounded-xl border-2 border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary"
+                    >
+                      <option value="published">Published</option>
+                      <option value="draft">Draft</option>
+                    </select>
                   </div>
                 </div>
 
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="featured"
+                    checked={formData.featured}
+                    onChange={(e) =>
+                      setFormData({ ...formData, featured: e.target.checked })
+                    }
+                    className="w-5 h-5 rounded border-2 border-input accent-primary"
+                  />
+                  <label htmlFor="featured" className="text-sm font-medium">
+                    Featured post {formData.featured && "(requires cover image)"}
+                  </label>
+                </div>
+
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Image</label>
+                  <label className="text-sm font-medium mb-2 block">Cover Image</label>
                   <div className="flex items-center gap-4">
                     <label className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-xl cursor-pointer hover:bg-secondary/80 transition-colors">
                       <Image className="w-4 h-4" />
@@ -334,7 +410,7 @@ const AdminPosts = () => {
         {posts.map((post) => (
           <Card key={post.id} className="overflow-hidden">
             <div className="flex">
-              {post.image_url && (
+              {post.image_url ? (
                 <div className="w-32 h-32 flex-shrink-0">
                   <img
                     src={post.image_url}
@@ -342,26 +418,43 @@ const AdminPosts = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
+              ) : (
+                <div className="w-32 h-32 flex-shrink-0 bg-muted flex items-center justify-center">
+                  <FileText className="w-8 h-8 text-muted-foreground" />
+                </div>
               )}
               <div className="flex-1 p-4">
                 <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold text-primary bg-secondary px-2 py-0.5 rounded uppercase">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <Badge variant="outline" className={cn("text-xs", getTypeColor(post.post_type))}>
                         {post.post_type}
-                      </span>
+                      </Badge>
+                      <Badge variant="outline" className={cn("text-xs", getStatusColor(post.status || "published"))}>
+                        {post.status || "published"}
+                      </Badge>
                       {post.featured && (
-                        <span className="text-xs font-semibold text-success bg-success/10 px-2 py-0.5 rounded">
+                        <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
                           Featured
-                        </span>
+                        </Badge>
                       )}
                     </div>
                     <h3 className="font-semibold text-foreground line-clamp-1">
                       {post.title}
                     </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
-                      {post.excerpt}
-                    </p>
+                    {post.subtitle && (
+                      <p className="text-xs text-muted-foreground line-clamp-1">{post.subtitle}</p>
+                    )}
+                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {post.reading_time || 1} min
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-3 h-3" />
+                        {post.view_count || 0} views
+                      </span>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
