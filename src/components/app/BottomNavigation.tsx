@@ -3,7 +3,7 @@ import { Home, Newspaper, Bookmark, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: "/app", icon: Home, label: "Home" },
+  { to: "/app", icon: Home, label: "Home", exact: true },
   { to: "/app/feed", icon: Newspaper, label: "Feed" },
   { to: "/app/saved", icon: Bookmark, label: "Saved" },
   { to: "/app/profile", icon: User, label: "Profile" },
@@ -13,13 +13,13 @@ const BottomNavigation = () => {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-50 pb-safe">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border shadow-lg z-50 pb-safe">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-4">
         {navItems.map((item) => {
-          const isActive = item.to === "/app" 
-            ? location.pathname === "/app" 
-            : location.pathname.startsWith(item.to);
-          
+          const isActive = item.exact
+            ? location.pathname === item.to
+            : location.pathname.startsWith(item.to) && location.pathname !== "/app";
+
           return (
             <NavLink
               key={item.to}

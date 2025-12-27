@@ -99,6 +99,36 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          link_type: string | null
+          link_value: string | null
+          message: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          link_type?: string | null
+          link_value?: string | null
+          message: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          link_type?: string | null
+          link_value?: string | null
+          message?: string
+          title?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           author_id: string

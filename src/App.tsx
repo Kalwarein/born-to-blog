@@ -17,6 +17,7 @@ import FeedPage from "./pages/app/FeedPage";
 import SavedPage from "./pages/app/SavedPage";
 import ProfilePage from "./pages/app/ProfilePage";
 import PostDetailPage from "./pages/app/PostDetailPage";
+import NotificationsPage from "./pages/app/NotificationsPage";
 
 // Admin Layout & Pages
 import AdminLayout from "./layouts/AdminLayout";
@@ -24,6 +25,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminPosts from "./pages/admin/AdminPosts";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminLogs from "./pages/admin/AdminLogs";
+import AdminNotifications from "./pages/admin/AdminNotifications";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,7 @@ const App = () => (
               <Route path="saved" element={<SavedPage />} />
               <Route path="profile" element={<ProfilePage />} />
               <Route path="post/:id" element={<PostDetailPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
             </Route>
 
             {/* Admin Routes */}
@@ -53,6 +56,7 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="posts" element={<AdminPosts />} />
               <Route path="users" element={<AdminUsers />} />
+              <Route path="notifications" element={<AdminNotifications />} />
               <Route path="logs" element={<AdminLogs />} />
             </Route>
 
