@@ -21,7 +21,7 @@ interface Post {
   view_count: number;
 }
 
-const CATEGORIES = ["All", "News", "Blog", "Announcement", "Post"];
+const CATEGORIES = ["All", "News", "Blog", "Tech", "Politics", "World", "Entertainment", "Opinion", "Sports", "Business", "Lifestyle", "Health"];
 
 const FeedPage = () => {
   const [searchParams] = useSearchParams();

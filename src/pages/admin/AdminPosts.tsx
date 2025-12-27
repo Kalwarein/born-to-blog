@@ -24,8 +24,26 @@ interface Post {
   status: string;
 }
 
-type PostType = "news" | "blog" | "announcement" | "post";
 type PostStatus = "draft" | "published";
+
+// All available post types
+const POST_TYPES = [
+  "news",
+  "blog",
+  "announcement",
+  "post",
+  "politics",
+  "tech",
+  "entertainment",
+  "world",
+  "opinion",
+  "sports",
+  "business",
+  "lifestyle",
+  "health",
+] as const;
+
+type PostType = typeof POST_TYPES[number];
 
 const AdminPosts = () => {
   const { user } = useAuth();
@@ -207,16 +225,21 @@ const AdminPosts = () => {
   };
 
   const getTypeColor = (type: string) => {
-    switch (type) {
-      case "news":
-        return "bg-red-500/10 text-red-600 border-red-500/20";
-      case "blog":
-        return "bg-blue-500/10 text-blue-600 border-blue-500/20";
-      case "announcement":
-        return "bg-amber-500/10 text-amber-600 border-amber-500/20";
-      default:
-        return "bg-primary/10 text-primary border-primary/20";
-    }
+    const colors: Record<string, string> = {
+      news: "bg-red-500/10 text-red-600 border-red-500/20",
+      blog: "bg-blue-500/10 text-blue-600 border-blue-500/20",
+      announcement: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+      politics: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+      tech: "bg-cyan-500/10 text-cyan-600 border-cyan-500/20",
+      entertainment: "bg-pink-500/10 text-pink-600 border-pink-500/20",
+      world: "bg-green-500/10 text-green-600 border-green-500/20",
+      opinion: "bg-orange-500/10 text-orange-600 border-orange-500/20",
+      sports: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+      business: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20",
+      lifestyle: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+      health: "bg-teal-500/10 text-teal-600 border-teal-500/20",
+    };
+    return colors[type] || "bg-primary/10 text-primary border-primary/20";
   };
 
   const getStatusColor = (status: string) => {
@@ -234,8 +257,8 @@ const AdminPosts = () => {
   }
 
   return (
-    <div className="p-6 md:p-0">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-6">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Posts</h1>
           <p className="text-muted-foreground">Manage your blog posts</p>
@@ -301,7 +324,7 @@ const AdminPosts = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Type</label>
+                    <label className="text-sm font-medium mb-2 block">Category</label>
                     <select
                       value={formData.post_type}
                       onChange={(e) =>
@@ -310,12 +333,13 @@ const AdminPosts = () => {
                           post_type: e.target.value as PostType,
                         })
                       }
-                      className="w-full h-12 px-4 rounded-xl border-2 border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary"
+                      className="w-full h-12 px-4 rounded-xl border-2 border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary capitalize"
                     >
-                      <option value="post">Post</option>
-                      <option value="blog">Blog</option>
-                      <option value="news">News</option>
-                      <option value="announcement">Announcement</option>
+                      {POST_TYPES.map((type) => (
+                        <option key={type} value={type} className="capitalize">
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -427,7 +451,7 @@ const AdminPosts = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <Badge variant="outline" className={cn("text-xs", getTypeColor(post.post_type))}>
+                      <Badge variant="outline" className={cn("text-xs capitalize", getTypeColor(post.post_type))}>
                         {post.post_type}
                       </Badge>
                       <Badge variant="outline" className={cn("text-xs", getStatusColor(post.status || "published"))}>
