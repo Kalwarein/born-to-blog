@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { Newspaper } from "lucide-react";
+import logo from "@/assets/logo.jpg";
 
 const Splash = () => {
   const navigate = useNavigate();
@@ -54,8 +54,12 @@ const Splash = () => {
 
       {/* Logo and Brand */}
       <div className={`flex flex-col items-center transition-all duration-700 ${animationStep >= 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-        <div className="w-28 h-28 gradient-primary rounded-3xl flex items-center justify-center shadow-orange mb-8 animate-bounce-soft">
-          <Newspaper className="w-14 h-14 text-primary-foreground" />
+        <div className="w-32 h-32 rounded-3xl overflow-hidden shadow-orange mb-8 animate-bounce-soft">
+          <img 
+            src={logo} 
+            alt="Born to Blog" 
+            className="w-full h-full object-cover"
+          />
         </div>
         
         <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-2 text-center">

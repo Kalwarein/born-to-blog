@@ -1,8 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import PostCard from "@/components/app/PostCard";
-import { Newspaper, Search, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import AppHeader from "@/components/app/AppHeader";
+import CategoryChips from "@/components/app/CategoryChips";
+import CompactPostCard from "@/components/app/CompactPostCard";
+import PostCardSkeleton from "@/components/app/PostCardSkeleton";
+import { Newspaper, Search } from "lucide-react";
 
 interface Post {
   id: string;
@@ -14,29 +17,41 @@ interface Post {
   featured: boolean;
   created_at: string;
   author_id: string;
+  reading_time: number;
+  view_count: number;
 }
 
+const CATEGORIES = ["All", "News", "Blog", "Announcement", "Post"];
+
 const FeedPage = () => {
+  const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+  const initialCategory = searchParams.get("category") || "All";
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const POSTS_PER_PAGE = 10;
 
-  const fetchPosts = useCallback(async (pageNum: number, search: string = "") => {
-    setIsSearching(!!search);
+  const fetchPosts = useCallback(async (pageNum: number, search: string = "", category: string = "All") => {
     const from = pageNum * POSTS_PER_PAGE;
     const to = from + POSTS_PER_PAGE - 1;
 
     let query = supabase
       .from("posts")
       .select("*")
+      .eq("status", "published")
       .order("created_at", { ascending: false });
 
     if (search.trim()) {
       query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
+    }
+
+    if (category !== "All") {
+      query = query.eq("post_type", category.toLowerCase() as "news" | "blog" | "announcement" | "post");
     }
 
     const { data, error } = await query.range(from, to);
@@ -62,79 +77,54 @@ const FeedPage = () => {
     const debounceTimer = setTimeout(() => {
       setPage(0);
       setLoading(true);
-      fetchPosts(0, searchQuery);
+      fetchPosts(0, searchQuery, selectedCategory);
     }, 300);
 
     return () => clearTimeout(debounceTimer);
-  }, [searchQuery, fetchPosts]);
+  }, [searchQuery, selectedCategory, fetchPosts]);
 
   const loadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchPosts(nextPage, searchQuery);
+    fetchPosts(nextPage, searchQuery, selectedCategory);
   };
-
-  const clearSearch = () => {
-    setSearchQuery("");
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border px-6 py-4">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
-            <Newspaper className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <h1 className="text-xl font-bold">Feed</h1>
-        </div>
-        
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search posts..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
-          />
-          {searchQuery && (
-            <button
-              onClick={clearSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-accent rounded-full transition-colors"
-            >
-              <X className="w-4 h-4 text-muted-foreground" />
-            </button>
-          )}
-        </div>
-      </header>
+    <div className="min-h-screen pb-20">
+      <AppHeader showSearch searchValue={searchQuery} onSearchChange={setSearchQuery} />
+
+      {/* Category Chips */}
+      <div className="px-4 py-3 border-b border-border">
+        <CategoryChips
+          categories={CATEGORIES}
+          selected={selectedCategory}
+          onSelect={setSelectedCategory}
+        />
+      </div>
 
       {/* Posts */}
-      <main className="px-6 py-6">
-        {isSearching && posts.length > 0 && (
+      <main className="px-4 py-4">
+        {searchQuery && posts.length > 0 && (
           <p className="text-sm text-muted-foreground mb-4">
             Found {posts.length} result{posts.length !== 1 ? "s" : ""} for "{searchQuery}"
           </p>
         )}
 
-        {posts.length > 0 ? (
-          <div className="space-y-6">
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <PostCardSkeleton key={i} variant="compact" />
+            ))}
+          </div>
+        ) : posts.length > 0 ? (
+          <div className="space-y-3">
             {posts.map((post, index) => (
               <div
                 key={post.id}
                 className="animate-fade-in"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <PostCard post={post} />
+                <CompactPostCard post={post} />
               </div>
             ))}
 
@@ -149,7 +139,7 @@ const FeedPage = () => {
           </div>
         ) : (
           <div className="text-center py-20">
-            {isSearching ? (
+            {searchQuery ? (
               <>
                 <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                 <h2 className="text-xl font-semibold text-foreground mb-2">No results found</h2>
