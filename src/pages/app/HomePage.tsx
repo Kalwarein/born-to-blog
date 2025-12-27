@@ -24,7 +24,7 @@ interface Post {
   status: string;
 }
 
-const CATEGORIES = ["All", "News", "Blog", "Announcement"];
+const CATEGORIES = ["All", "News", "Blog", "Tech", "Politics", "World", "Entertainment", "Opinion", "Sports", "Business"];
 
 const HomePage = () => {
   const navigate = useNavigate();

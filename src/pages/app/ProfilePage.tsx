@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { LogOut, User, Shield, ChevronRight } from "lucide-react";
+import { LogOut, User, Shield, ChevronRight, Moon, Sun, Settings } from "lucide-react";
 
 interface Profile {
   name: string;
@@ -15,6 +16,7 @@ interface Profile {
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, signOut, isAdmin } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -80,13 +82,13 @@ const ProfilePage = () => {
       </header>
 
       {/* Options */}
-      <main className="px-6 -mt-6">
+      <main className="px-6 -mt-6 space-y-4">
         <Card>
-          <CardContent className="p-0">
+          <CardContent className="p-0 divide-y divide-border">
             {isAdmin && (
               <button
                 onClick={() => navigate("/admin")}
-                className="w-full flex items-center justify-between p-4 hover:bg-accent transition-colors rounded-t-2xl"
+                className="w-full flex items-center justify-between p-4 hover:bg-accent transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
@@ -97,13 +99,36 @@ const ProfilePage = () => {
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               </button>
             )}
+            
+            <button
+              onClick={toggleTheme}
+              className="w-full flex items-center justify-between p-4 hover:bg-accent transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center">
+                  {theme === "dark" ? (
+                    <Moon className="w-5 h-5 text-secondary-foreground" />
+                  ) : (
+                    <Sun className="w-5 h-5 text-secondary-foreground" />
+                  )}
+                </div>
+                <div className="text-left">
+                  <span className="font-medium block">Appearance</span>
+                  <span className="text-sm text-muted-foreground capitalize">{theme} mode</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground capitalize">{theme}</span>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </div>
+            </button>
           </CardContent>
         </Card>
 
         <Button
           variant="outline"
           size="lg"
-          className="w-full mt-6 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+          className="w-full text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
           onClick={handleSignOut}
         >
           <LogOut className="w-5 h-5 mr-2" />

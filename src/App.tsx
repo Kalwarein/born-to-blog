@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 // Pages
 import Splash from "./pages/Splash";
@@ -31,41 +32,43 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Splash />} />
-            <Route path="/auth" element={<Auth />} />
+    <ThemeProvider>
+      <TooltipProvider>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Splash />} />
+              <Route path="/auth" element={<Auth />} />
 
-            {/* User App Routes */}
-            <Route path="/app" element={<AppLayout />}>
-              <Route index element={<HomePage />} />
-              <Route path="feed" element={<FeedPage />} />
-              <Route path="saved" element={<SavedPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="post/:id" element={<PostDetailPage />} />
-              <Route path="notifications" element={<NotificationsPage />} />
-            </Route>
+              {/* User App Routes */}
+              <Route path="/app" element={<AppLayout />}>
+                <Route index element={<HomePage />} />
+                <Route path="feed" element={<FeedPage />} />
+                <Route path="saved" element={<SavedPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="post/:id" element={<PostDetailPage />} />
+                <Route path="notifications" element={<NotificationsPage />} />
+              </Route>
 
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="posts" element={<AdminPosts />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="notifications" element={<AdminNotifications />} />
-              <Route path="logs" element={<AdminLogs />} />
-            </Route>
+              {/* Admin Routes */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="posts" element={<AdminPosts />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="notifications" element={<AdminNotifications />} />
+                <Route path="logs" element={<AdminLogs />} />
+              </Route>
 
-            {/* Catch-all */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </TooltipProvider>
+              {/* Catch-all */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
