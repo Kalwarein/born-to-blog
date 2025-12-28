@@ -101,6 +101,14 @@ const PostDetailPage = () => {
       p_user_id: user?.id || null,
       p_session_id: user ? null : sessionIdRef.current,
     });
+    
+    // Add to reading history for logged-in users
+    if (user) {
+      await supabase.from("reading_history").upsert(
+        { user_id: user.id, post_id: id, read_at: new Date().toISOString() },
+        { onConflict: "user_id,post_id" }
+      );
+    }
   };
 
   const fetchPost = async () => {
