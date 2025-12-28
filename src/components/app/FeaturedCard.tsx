@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Eye, Clock } from "lucide-react";
+import { Eye, Clock, Zap } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Post {
@@ -11,6 +11,7 @@ interface Post {
   reading_time: number;
   view_count: number;
   created_at: string;
+  breaking?: boolean;
 }
 
 interface FeaturedCardProps {
@@ -24,6 +25,13 @@ const FeaturedCard = ({ post }: FeaturedCardProps) => {
     news: "bg-blue-500",
     blog: "bg-green-500",
     announcement: "bg-purple-500",
+    politics: "bg-rose-500",
+    tech: "bg-cyan-500",
+    entertainment: "bg-pink-500",
+    world: "bg-emerald-500",
+    opinion: "bg-orange-500",
+    sports: "bg-lime-500",
+    business: "bg-indigo-500",
     post: "bg-primary",
   };
 
@@ -48,6 +56,14 @@ const FeaturedCard = ({ post }: FeaturedCardProps) => {
         
         {/* Overlay gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        
+        {/* Breaking badge */}
+        {post.breaking && (
+          <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-1 bg-destructive text-destructive-foreground rounded-full text-xs font-bold uppercase animate-pulse">
+            <Zap className="w-3 h-3" />
+            Breaking
+          </div>
+        )}
         
         {/* Category badge */}
         <span className={`absolute top-3 left-3 px-3 py-1 ${postTypeColors[post.post_type] || postTypeColors.post} text-white text-xs font-semibold rounded-full uppercase tracking-wide`}>

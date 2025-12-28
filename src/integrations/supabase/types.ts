@@ -129,9 +129,42 @@ export type Database = {
         }
         Relationships: []
       }
+      post_views: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_views_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           author_id: string
+          breaking: boolean | null
           content: string
           created_at: string
           excerpt: string | null
@@ -148,6 +181,7 @@ export type Database = {
         }
         Insert: {
           author_id: string
+          breaking?: boolean | null
           content: string
           created_at?: string
           excerpt?: string | null
@@ -164,6 +198,7 @@ export type Database = {
         }
         Update: {
           author_id?: string
+          breaking?: boolean | null
           content?: string
           created_at?: string
           excerpt?: string | null
@@ -276,6 +311,10 @@ export type Database = {
         Returns: boolean
       }
       increment_view_count: { Args: { post_id: string }; Returns: undefined }
+      record_post_view: {
+        Args: { p_post_id: string; p_session_id?: string; p_user_id?: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "user"

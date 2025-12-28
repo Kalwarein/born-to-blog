@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { formatDistanceToNow, format } from "date-fns";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { formatDistanceToNow } from "date-fns";
 import {
   ArrowLeft,
   Heart,
@@ -16,6 +17,11 @@ import {
   Clock,
   Eye,
   User,
+  Volume2,
+  VolumeX,
+  Pause,
+  Play,
+  Zap,
 } from "lucide-react";
 import CompactPostCard from "@/components/app/CompactPostCard";
 import { Input } from "@/components/ui/input";
@@ -29,6 +35,7 @@ interface Post {
   image_url: string | null;
   post_type: string;
   featured: boolean;
+  breaking: boolean;
   created_at: string;
   author_id: string;
   reading_time: number;
@@ -51,6 +58,10 @@ const PostDetailPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { speak, stop, toggle, isPlaying, isPaused, isSupported } = useTextToSpeech();
+  const sessionIdRef = useRef<string>(
+    sessionStorage.getItem("session_id") || `session_${Date.now()}_${Math.random().toString(36).slice(2)}`
+  );
 
   const [post, setPost] = useState<Post | null>(null);
   const [suggestedPosts, setSuggestedPosts] = useState<Post[]>([]);
@@ -62,22 +73,34 @@ const PostDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [authorName, setAuthorName] = useState("Born to Blog");
 
+  // Store session ID
+  useEffect(() => {
+    sessionStorage.setItem("session_id", sessionIdRef.current);
+  }, []);
+
   useEffect(() => {
     if (id) {
       fetchPost();
       fetchComments();
       fetchSuggestedPosts();
-      incrementViewCount();
+      recordView();
       if (user) {
         checkLikeStatus();
         checkSaveStatus();
       }
     }
+    // Stop TTS when leaving page
+    return () => stop();
   }, [id, user]);
 
-  const incrementViewCount = async () => {
+  const recordView = async () => {
     if (!id) return;
-    await supabase.rpc("increment_view_count", { post_id: id });
+    // Use the new unique view tracking function
+    await supabase.rpc("record_post_view", {
+      p_post_id: id,
+      p_user_id: user?.id || null,
+      p_session_id: user ? null : sessionIdRef.current,
+    });
   };
 
   const fetchPost = async () => {
@@ -88,7 +111,7 @@ const PostDetailPage = () => {
       .maybeSingle();
 
     if (!error && data) {
-      setPost(data);
+      setPost(data as Post);
       fetchAuthorName(data.author_id);
     }
 
@@ -135,7 +158,7 @@ const PostDetailPage = () => {
       .order("view_count", { ascending: false })
       .limit(4);
 
-    if (data) setSuggestedPosts(data);
+    if (data) setSuggestedPosts(data as Post[]);
   };
 
   const checkLikeStatus = async () => {
@@ -226,10 +249,36 @@ const PostDetailPage = () => {
     }
   };
 
+  const handleReadAloud = () => {
+    if (!post) return;
+    if (isPlaying && !isPaused) {
+      toggle(); // pause
+    } else if (isPaused) {
+      toggle(); // resume
+    } else {
+      // Start fresh
+      const textToRead = `${post.title}. ${post.subtitle || ""}. ${post.content}`;
+      speak(textToRead);
+    }
+  };
+
+  const handleStopReading = () => {
+    stop();
+  };
+
   const postTypeColors: Record<string, string> = {
     news: "bg-blue-500",
     blog: "bg-green-500",
     announcement: "bg-purple-500",
+    politics: "bg-rose-500",
+    tech: "bg-cyan-500",
+    entertainment: "bg-pink-500",
+    world: "bg-emerald-500",
+    opinion: "bg-orange-500",
+    sports: "bg-lime-500",
+    business: "bg-indigo-500",
+    lifestyle: "bg-fuchsia-500",
+    health: "bg-teal-500",
     post: "bg-primary",
   };
 
@@ -260,6 +309,14 @@ const PostDetailPage = () => {
           </div>
         )}
         
+        {/* Breaking News Badge */}
+        {post.breaking && (
+          <div className="absolute top-14 left-4 z-30 flex items-center gap-1 px-3 py-1.5 bg-destructive text-destructive-foreground rounded-full text-xs font-bold uppercase animate-pulse">
+            <Zap className="w-3 h-3" />
+            Breaking
+          </div>
+        )}
+        
         {/* Floating Header */}
         <div className="absolute top-0 left-0 right-0 z-40 px-4 py-3">
           <div className="flex items-center justify-between">
@@ -271,14 +328,16 @@ const PostDetailPage = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <Button
-              variant="secondary"
-              size="icon"
-              onClick={handleShare}
-              className="rounded-full bg-background/80 backdrop-blur-lg shadow-md"
-            >
-              <Share2 className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={handleShare}
+                className="rounded-full bg-background/80 backdrop-blur-lg shadow-md"
+              >
+                <Share2 className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -312,7 +371,7 @@ const PostDetailPage = () => {
         )}
 
         {/* Meta Info */}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground mb-6 pb-6 border-b border-border">
+        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6 pb-6 border-b border-border">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
               <User className="w-4 h-4 text-primary-foreground" />
@@ -325,6 +384,46 @@ const PostDetailPage = () => {
             {post.reading_time} min read
           </span>
         </div>
+
+        {/* Read Aloud Button */}
+        {isSupported && (
+          <div className="flex items-center gap-2 mb-6">
+            <Button
+              variant={isPlaying ? "default" : "outline"}
+              size="sm"
+              onClick={handleReadAloud}
+              className="gap-2"
+            >
+              {isPlaying && !isPaused ? (
+                <>
+                  <Pause className="w-4 h-4" />
+                  Pause
+                </>
+              ) : isPaused ? (
+                <>
+                  <Play className="w-4 h-4" />
+                  Resume
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-4 h-4" />
+                  Listen
+                </>
+              )}
+            </Button>
+            {(isPlaying || isPaused) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleStopReading}
+                className="gap-2"
+              >
+                <VolumeX className="w-4 h-4" />
+                Stop
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Article Content */}
         <div className="prose prose-lg max-w-none">

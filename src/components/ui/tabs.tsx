@@ -1,106 +1,55 @@
-"use client";
+"use client"
 
-import * as React from "react";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
-import { motion } from "framer-motion";
-import { LayoutGrid, List, ArrowLeftRight, Folder, User } from "lucide-react";
-import { cn } from "@/lib/utils";
+import * as React from "react"
+import * as TabsPrimitive from "@radix-ui/react-tabs"
 
-const Tabs = TabsPrimitive.Root;
+import { cn } from "@/lib/utils"
+
+const Tabs = TabsPrimitive.Root
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, children, ...props }, ref) => {
-  // We use state to track which index is active to move the "dip"
-  const [activeTab, setActiveTab] = React.useState("transfer");
-
-  return (
-    <div className="relative flex justify-center w-full bg-[#FF002E] p-8 min-h-[200px] items-end">
-      <TabsPrimitive.List
-        ref={ref}
-        className={cn(
-          "relative flex h-20 w-full max-w-md items-center justify-around bg-white px-4 rounded-t-[32px]",
-          className
-        )}
-        {...props}
-      >
-        {/* The Animated Cutout / Dip */}
-        <motion.div
-          className="absolute top-0 h-full flex justify-center pointer-events-none"
-          initial={false}
-          animate={{
-            // Calculations for positioning the dip:
-            // We divide the bar into 5 equal sections (20% each)
-            x: activeTab === "grid" ? "-40%" : 
-               activeTab === "list" ? "-20%" : 
-               activeTab === "transfer" ? "0%" : 
-               activeTab === "folder" ? "20%" : "40%"
-          }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          style={{ width: "20%" }}
-        >
-          {/* This SVG creates the "U" shape dip */}
-          <svg
-            width="100"
-            height="40"
-            viewBox="0 0 100 40"
-            className="absolute -top-[1px]"
-            fill="none"
-          >
-            <path
-              d="M0 0 H20 C30 0 35 35 50 35 C65 35 70 0 80 0 H100 V40 H0 Z"
-              fill="#FF002E" // Matches background
-            />
-          </svg>
-          
-          {/* The Floating White Circle */}
-          <div className="absolute -top-6 w-14 h-14 bg-white rounded-full shadow-lg flex items-center justify-center">
-            <div className="text-black">
-               {/* This reflects the icon of the active tab */}
-               {activeTab === "transfer" && <ArrowLeftRight size={24} />}
-               {activeTab === "grid" && <LayoutGrid size={24} />}
-               {activeTab === "list" && <List size={24} />}
-               {activeTab === "folder" && <Folder size={24} />}
-               {activeTab === "user" && <User size={24} />}
-            </div>
-          </div>
-        </motion.div>
-
-        {children}
-      </TabsPrimitive.List>
-    </div>
-  );
-});
-TabsList.displayName = TabsPrimitive.List.displayName;
-
-const TabsTrigger = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> & { isActive?: boolean }
 >(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
+  <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "z-10 flex flex-col items-center justify-center transition-all duration-300 text-gray-400 data-[state=active]:opacity-0",
+      "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
       className
     )}
     {...props}
   />
-));
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
+))
+TabsList.displayName = TabsPrimitive.List.displayName
 
-// Example Usage Component
-export function AnimatedNavbar() {
-  return (
-    <Tabs defaultValue="transfer" className="w-full">
-      <TabsList>
-        <TabsTrigger value="grid"><LayoutGrid size={24} /></TabsTrigger>
-        <TabsTrigger value="list"><List size={24} /></TabsTrigger>
-        <TabsTrigger value="transfer"><ArrowLeftRight size={24} /></TabsTrigger>
-        <TabsTrigger value="folder"><Folder size={24} /></TabsTrigger>
-        <TabsTrigger value="user"><User size={24} /></TabsTrigger>
-      </TabsList>
-    </Tabs>
-  );
-               }
-      
+const TabsTrigger = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.Trigger
+    ref={ref}
+    className={cn(
+      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+      className
+    )}
+    {...props}
+  />
+))
+TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
+
+const TabsContent = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.Content
+    ref={ref}
+    className={cn(
+      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      className
+    )}
+    {...props}
+  />
+))
+TabsContent.displayName = TabsPrimitive.Content.displayName
+
+export { Tabs, TabsList, TabsTrigger, TabsContent }
