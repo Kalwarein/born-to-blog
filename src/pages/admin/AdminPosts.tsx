@@ -5,8 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit, Trash2, Image, X, Clock, Eye, FileText } from "lucide-react";
+import { Plus, Edit, Trash2, Image, X, Clock, Eye, FileText, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Post {
@@ -18,6 +26,7 @@ interface Post {
   image_url: string | null;
   post_type: string;
   featured: boolean;
+  breaking: boolean;
   created_at: string;
   reading_time: number;
   view_count: number;
@@ -59,6 +68,7 @@ const AdminPosts = () => {
     post_type: "post" as PostType,
     status: "published" as PostStatus,
     featured: false,
+    breaking: false,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -153,6 +163,7 @@ const AdminPosts = () => {
         post_type: formData.post_type,
         status: formData.status,
         featured: formData.featured,
+        breaking: formData.breaking,
         image_url: imageUrl,
         author_id: user.id,
       };
@@ -193,6 +204,7 @@ const AdminPosts = () => {
       post_type: post.post_type as PostType,
       status: (post.status || "published") as PostStatus,
       featured: post.featured,
+      breaking: post.breaking || false,
     });
     setImagePreview(post.image_url);
     setShowForm(true);
@@ -219,6 +231,7 @@ const AdminPosts = () => {
       post_type: "post",
       status: "published",
       featured: false,
+      breaking: false,
     });
     setImageFile(null);
     setImagePreview(null);
@@ -325,55 +338,71 @@ const AdminPosts = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">Category</label>
-                    <select
+                    <Select
                       value={formData.post_type}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          post_type: e.target.value as PostType,
-                        })
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, post_type: value as PostType })
                       }
-                      className="w-full h-12 px-4 rounded-xl border-2 border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary capitalize"
                     >
-                      {POST_TYPES.map((type) => (
-                        <option key={type} value={type} className="capitalize">
-                          {type.charAt(0).toUpperCase() + type.slice(1)}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="h-12 rounded-xl">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border border-border rounded-xl shadow-lg">
+                        {POST_TYPES.map((type) => (
+                          <SelectItem key={type} value={type} className="capitalize cursor-pointer">
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div>
                     <label className="text-sm font-medium mb-2 block">Status</label>
-                    <select
+                    <Select
                       value={formData.status}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          status: e.target.value as PostStatus,
-                        })
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, status: value as PostStatus })
                       }
-                      className="w-full h-12 px-4 rounded-xl border-2 border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary"
                     >
-                      <option value="published">Published</option>
-                      <option value="draft">Draft</option>
-                    </select>
+                      <SelectTrigger className="h-12 rounded-xl">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border border-border rounded-xl shadow-lg">
+                        <SelectItem value="published" className="cursor-pointer">Published</SelectItem>
+                        <SelectItem value="draft" className="cursor-pointer">Draft</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="featured"
-                    checked={formData.featured}
-                    onChange={(e) =>
-                      setFormData({ ...formData, featured: e.target.checked })
-                    }
-                    className="w-5 h-5 rounded border-2 border-input accent-primary"
-                  />
-                  <label htmlFor="featured" className="text-sm font-medium">
-                    Featured post {formData.featured && "(requires cover image)"}
-                  </label>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      id="featured"
+                      checked={formData.featured}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, featured: !!checked })
+                      }
+                    />
+                    <label htmlFor="featured" className="text-sm font-medium cursor-pointer">
+                      Featured post {formData.featured && "(requires cover image)"}
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      id="breaking"
+                      checked={formData.breaking}
+                      onCheckedChange={(checked) =>
+                        setFormData({ ...formData, breaking: !!checked })
+                      }
+                    />
+                    <label htmlFor="breaking" className="text-sm font-medium cursor-pointer flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-destructive" />
+                      Breaking News
+                    </label>
+                  </div>
                 </div>
 
                 <div>
@@ -435,16 +464,27 @@ const AdminPosts = () => {
           <Card key={post.id} className="overflow-hidden">
             <div className="flex">
               {post.image_url ? (
-                <div className="w-32 h-32 flex-shrink-0">
+                <div className="w-32 h-32 flex-shrink-0 relative">
                   <img
                     src={post.image_url}
                     alt={post.title}
                     className="w-full h-full object-cover"
                   />
+                  {post.breaking && (
+                    <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 bg-destructive text-destructive-foreground rounded-full text-[10px] font-bold">
+                      <Zap className="w-2.5 h-2.5" />
+                      BREAKING
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="w-32 h-32 flex-shrink-0 bg-muted flex items-center justify-center">
+                <div className="w-32 h-32 flex-shrink-0 bg-muted flex items-center justify-center relative">
                   <FileText className="w-8 h-8 text-muted-foreground" />
+                  {post.breaking && (
+                    <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 bg-destructive text-destructive-foreground rounded-full text-[10px] font-bold">
+                      <Zap className="w-2.5 h-2.5" />
+                    </div>
+                  )}
                 </div>
               )}
               <div className="flex-1 p-4">
@@ -460,6 +500,11 @@ const AdminPosts = () => {
                       {post.featured && (
                         <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
                           Featured
+                        </Badge>
+                      )}
+                      {post.breaking && (
+                        <Badge variant="outline" className="text-xs bg-destructive/10 text-destructive border-destructive/20">
+                          Breaking
                         </Badge>
                       )}
                     </div>
