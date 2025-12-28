@@ -248,6 +248,35 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_history: {
+        Row: {
+          id: string
+          post_id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          post_id: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          post_id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_history_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_posts: {
         Row: {
           created_at: string
@@ -294,6 +323,39 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          breaking_news_enabled: boolean | null
+          created_at: string
+          dark_mode: boolean | null
+          font_size: string | null
+          id: string
+          notifications_enabled: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          breaking_news_enabled?: boolean | null
+          created_at?: string
+          dark_mode?: boolean | null
+          font_size?: string | null
+          id?: string
+          notifications_enabled?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          breaking_news_enabled?: boolean | null
+          created_at?: string
+          dark_mode?: boolean | null
+          font_size?: string | null
+          id?: string
+          notifications_enabled?: boolean | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

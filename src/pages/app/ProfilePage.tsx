@@ -3,9 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { LogOut, User, Shield, ChevronRight, Moon, Sun, Settings } from "lucide-react";
+import {
+  User,
+  Shield,
+  Bookmark,
+  Clock,
+  Bell,
+  Palette,
+  Lock,
+  HelpCircle,
+  Info,
+  LogOut,
+  Moon,
+  Sun,
+  ChevronRight,
+} from "lucide-react";
+import ProfileMenuItem from "@/components/profile/ProfileMenuItem";
+import ProfileMenuSection from "@/components/profile/ProfileMenuSection";
+import { Switch } from "@/components/ui/switch";
 
 interface Profile {
   name: string;
@@ -21,23 +36,19 @@ const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      fetchProfile();
-    }
+    if (user) fetchProfile();
   }, [user]);
 
   const fetchProfile = async () => {
     if (!user) return;
 
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("profiles")
       .select("name, email, avatar_url")
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (!error && data) {
-      setProfile(data);
-    }
+    if (data) setProfile(data);
     setLoading(false);
   };
 
@@ -55,85 +66,118 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="gradient-hero px-6 pt-8 pb-12 text-center">
-        <div className="w-24 h-24 mx-auto bg-primary rounded-full flex items-center justify-center mb-4 shadow-orange">
-          {profile?.avatar_url ? (
-            <img
-              src={profile.avatar_url}
-              alt={profile.name}
-              className="w-full h-full rounded-full object-cover"
-            />
-          ) : (
-            <User className="w-12 h-12 text-primary-foreground" />
-          )}
+    <div className="min-h-screen pb-24">
+      {/* Profile Header */}
+      <header className="gradient-hero px-6 pt-8 pb-10">
+        <div className="flex items-center gap-4">
+          <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-orange flex-shrink-0">
+            {profile?.avatar_url ? (
+              <img
+                src={profile.avatar_url}
+                alt={profile.name}
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              <User className="w-10 h-10 text-primary-foreground" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold text-foreground truncate">
+              {profile?.name || "User"}
+            </h1>
+            <p className="text-sm text-muted-foreground truncate">{profile?.email}</p>
+            {isAdmin && (
+              <span className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-primary bg-secondary px-2 py-0.5 rounded-full">
+                <Shield className="w-3 h-3" />
+                Admin
+              </span>
+            )}
+          </div>
         </div>
-        <h1 className="text-2xl font-bold text-foreground">
-          {profile?.name || "User"}
-        </h1>
-        <p className="text-muted-foreground mt-1">{profile?.email}</p>
-        {isAdmin && (
-          <span className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-primary bg-secondary px-3 py-1 rounded-full">
-            <Shield className="w-3 h-3" />
-            Admin
-          </span>
-        )}
       </header>
 
-      {/* Options */}
-      <main className="px-6 -mt-6 space-y-4">
-        <Card>
-          <CardContent className="p-0 divide-y divide-border">
-            {isAdmin && (
-              <button
-                onClick={() => navigate("/admin")}
-                className="w-full flex items-center justify-between p-4 hover:bg-accent transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-primary-foreground" />
-                  </div>
-                  <span className="font-medium">Admin Dashboard</span>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </button>
-            )}
-            
-            <button
-              onClick={toggleTheme}
-              className="w-full flex items-center justify-between p-4 hover:bg-accent transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center">
-                  {theme === "dark" ? (
-                    <Moon className="w-5 h-5 text-secondary-foreground" />
-                  ) : (
-                    <Sun className="w-5 h-5 text-secondary-foreground" />
-                  )}
-                </div>
-                <div className="text-left">
-                  <span className="font-medium block">Appearance</span>
-                  <span className="text-sm text-muted-foreground capitalize">{theme} mode</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground capitalize">{theme}</span>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </div>
-            </button>
-          </CardContent>
-        </Card>
+      {/* Menu Sections */}
+      <main className="px-4 -mt-4 space-y-5">
+        {/* Admin Section */}
+        {isAdmin && (
+          <ProfileMenuSection>
+            <ProfileMenuItem
+              icon={Shield}
+              label="Admin Dashboard"
+              sublabel="Manage posts and users"
+              onClick={() => navigate("/admin")}
+              iconBgClass="gradient-primary"
+            />
+          </ProfileMenuSection>
+        )}
 
-        <Button
-          variant="outline"
-          size="lg"
-          className="w-full text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
-          onClick={handleSignOut}
-        >
-          <LogOut className="w-5 h-5 mr-2" />
-          Sign Out
-        </Button>
+        {/* Content Section */}
+        <ProfileMenuSection title="Your Content">
+          <ProfileMenuItem
+            icon={Bookmark}
+            label="Saved Articles"
+            sublabel="View your bookmarks"
+            onClick={() => navigate("/app/saved")}
+          />
+          <ProfileMenuItem
+            icon={Clock}
+            label="Reading History"
+            sublabel="Recently viewed posts"
+            onClick={() => navigate("/app/reading-history")}
+          />
+        </ProfileMenuSection>
+
+        {/* Settings Section */}
+        <ProfileMenuSection title="Settings">
+          <ProfileMenuItem
+            icon={Bell}
+            label="Notifications"
+            sublabel="Manage alerts"
+            onClick={() => navigate("/app/notification-settings")}
+          />
+          <ProfileMenuItem
+            icon={Palette}
+            label="Appearance"
+            sublabel={`${theme === "dark" ? "Dark" : "Light"} mode`}
+            onClick={() => navigate("/app/appearance-settings")}
+            rightElement={
+              <div className="flex items-center gap-2">
+                {theme === "dark" ? (
+                  <Moon className="w-4 h-4 text-muted-foreground" />
+                ) : (
+                  <Sun className="w-4 h-4 text-muted-foreground" />
+                )}
+                <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
+              </div>
+            }
+          />
+        </ProfileMenuSection>
+
+        {/* Support Section */}
+        <ProfileMenuSection title="Support">
+          <ProfileMenuItem
+            icon={HelpCircle}
+            label="Help & Support"
+            sublabel="FAQs and contact"
+            onClick={() => navigate("/app/help-support")}
+          />
+          <ProfileMenuItem
+            icon={Info}
+            label="About Born to Blog"
+            sublabel="Version 1.0.0"
+            onClick={() => navigate("/app/about")}
+          />
+        </ProfileMenuSection>
+
+        {/* Sign Out */}
+        <ProfileMenuSection>
+          <ProfileMenuItem
+            icon={LogOut}
+            label="Sign Out"
+            onClick={handleSignOut}
+            destructive
+          />
+        </ProfileMenuSection>
       </main>
     </div>
   );

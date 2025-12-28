@@ -1,6 +1,7 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Home, Newspaper, Bookmark, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect, useState, useRef } from "react";
 
 const navItems = [
   { to: "/app", icon: Home, label: "Home", exact: true },
@@ -11,31 +12,85 @@ const navItems = [
 
 const BottomNavigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const navRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const getActiveIndex = () => {
+    return navItems.findIndex((item) => {
+      if (item.exact) {
+        return location.pathname === item.to;
+      }
+      return location.pathname.startsWith(item.to) && location.pathname !== "/app";
+    });
+  };
+
+  const activeIndex = getActiveIndex();
+
+  useEffect(() => {
+    const activeButton = itemRefs.current[activeIndex];
+    if (activeButton && navRef.current) {
+      const navRect = navRef.current.getBoundingClientRect();
+      const buttonRect = activeButton.getBoundingClientRect();
+      setIndicatorStyle({
+        left: buttonRect.left - navRect.left,
+        width: buttonRect.width,
+      });
+    }
+  }, [activeIndex, location.pathname]);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border shadow-lg z-50 pb-safe">
-      <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-4">
-        {navItems.map((item) => {
-          const isActive = item.exact
-            ? location.pathname === item.to
-            : location.pathname.startsWith(item.to) && location.pathname !== "/app";
+    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
+      {/* Background blur container */}
+      <div className="bg-card/90 backdrop-blur-xl border-t border-border shadow-lg">
+        <div 
+          ref={navRef}
+          className="relative flex items-center justify-around h-[72px] max-w-lg mx-auto px-2"
+        >
+          {/* Animated floating indicator */}
+          <div
+            className="absolute top-2 h-14 bg-primary rounded-2xl shadow-orange transition-all duration-500 ease-out"
+            style={{
+              left: `${indicatorStyle.left}px`,
+              width: `${indicatorStyle.width}px`,
+              transform: 'translateZ(0)',
+            }}
+          />
 
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={cn(
-                "flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all duration-300",
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-orange scale-105"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
-              )}
-            >
-              <item.icon className={cn("w-5 h-5", isActive && "animate-scale-in")} />
-              <span className="text-xs font-medium mt-1">{item.label}</span>
-            </NavLink>
-          );
-        })}
+          {navItems.map((item, index) => {
+            const isActive = activeIndex === index;
+
+            return (
+              <button
+                key={item.to}
+                ref={(el) => (itemRefs.current[index] = el)}
+                onClick={() => navigate(item.to)}
+                className={cn(
+                  "relative z-10 flex flex-col items-center justify-center w-[72px] h-14 rounded-2xl transition-all duration-300",
+                  isActive
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <item.icon 
+                  className={cn(
+                    "w-5 h-5 transition-transform duration-300",
+                    isActive && "scale-110"
+                  )} 
+                />
+                <span 
+                  className={cn(
+                    "text-[10px] font-medium mt-1 transition-all duration-300",
+                    isActive ? "opacity-100" : "opacity-70"
+                  )}
+                >
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );

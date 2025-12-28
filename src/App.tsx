@@ -19,6 +19,11 @@ import SavedPage from "./pages/app/SavedPage";
 import ProfilePage from "./pages/app/ProfilePage";
 import PostDetailPage from "./pages/app/PostDetailPage";
 import NotificationsPage from "./pages/app/NotificationsPage";
+import ReadingHistoryPage from "./pages/app/ReadingHistoryPage";
+import AppearanceSettingsPage from "./pages/app/AppearanceSettingsPage";
+import NotificationSettingsPage from "./pages/app/NotificationSettingsPage";
+import HelpSupportPage from "./pages/app/HelpSupportPage";
+import AboutPage from "./pages/app/AboutPage";
 
 // Admin Layout & Pages
 import AdminLayout from "./layouts/AdminLayout";
@@ -51,6 +56,11 @@ const App = () => (
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="post/:id" element={<PostDetailPage />} />
                 <Route path="notifications" element={<NotificationsPage />} />
+                <Route path="reading-history" element={<ReadingHistoryPage />} />
+                <Route path="appearance-settings" element={<AppearanceSettingsPage />} />
+                <Route path="notification-settings" element={<NotificationSettingsPage />} />
+                <Route path="help-support" element={<HelpSupportPage />} />
+                <Route path="about" element={<AboutPage />} />
               </Route>
 
               {/* Admin Routes */}
