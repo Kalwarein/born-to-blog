@@ -248,6 +248,51 @@ export type Database = {
         }
         Relationships: []
       }
+      publishers: {
+        Row: {
+          admin_id: string
+          banner_url: string | null
+          contact_email: string | null
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          social_links: Json | null
+          total_likes: number | null
+          total_views: number | null
+          updated_at: string
+        }
+        Insert: {
+          admin_id: string
+          banner_url?: string | null
+          contact_email?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          social_links?: Json | null
+          total_likes?: number | null
+          total_views?: number | null
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string
+          banner_url?: string | null
+          contact_email?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          social_links?: Json | null
+          total_likes?: number | null
+          total_views?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reading_history: {
         Row: {
           id: string
