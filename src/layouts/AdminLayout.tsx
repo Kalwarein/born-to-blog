@@ -8,6 +8,9 @@ import {
   ScrollText,
   LogOut,
   Newspaper,
+  Bell,
+  UserCircle,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,6 +19,8 @@ const adminNavItems = [
   { to: "/admin", icon: LayoutDashboard, label: "Dashboard", exact: true },
   { to: "/admin/posts", icon: FileText, label: "Posts" },
   { to: "/admin/users", icon: Users, label: "Users" },
+  { to: "/admin/notifications", icon: Bell, label: "Notifications" },
+  { to: "/admin/publisher", icon: UserCircle, label: "Publisher" },
   { to: "/admin/logs", icon: ScrollText, label: "Logs" },
 ];
 

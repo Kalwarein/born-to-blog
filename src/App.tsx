@@ -24,6 +24,7 @@ import AppearanceSettingsPage from "./pages/app/AppearanceSettingsPage";
 import NotificationSettingsPage from "./pages/app/NotificationSettingsPage";
 import HelpSupportPage from "./pages/app/HelpSupportPage";
 import AboutPage from "./pages/app/AboutPage";
+import PublisherPage from "./pages/app/PublisherPage";
 
 // Admin Layout & Pages
 import AdminLayout from "./layouts/AdminLayout";
@@ -32,6 +33,7 @@ import AdminPosts from "./pages/admin/AdminPosts";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminLogs from "./pages/admin/AdminLogs";
 import AdminNotifications from "./pages/admin/AdminNotifications";
+import AdminPublisherEdit from "./pages/admin/AdminPublisherEdit";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +49,7 @@ const App = () => (
               {/* Public Routes */}
               <Route path="/" element={<Splash />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/publisher/:id" element={<PublisherPage />} />
 
               {/* User App Routes */}
               <Route path="/app" element={<AppLayout />}>
@@ -70,6 +73,7 @@ const App = () => (
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="notifications" element={<AdminNotifications />} />
                 <Route path="logs" element={<AdminLogs />} />
+                <Route path="publisher" element={<AdminPublisherEdit />} />
               </Route>
 
               {/* Catch-all */}
