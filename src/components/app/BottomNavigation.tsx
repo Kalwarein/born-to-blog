@@ -41,56 +41,53 @@ const BottomNavigation = () => {
   }, [activeIndex, location.pathname]);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
-      {/* Background blur container */}
-      <div className="bg-card/90 backdrop-blur-xl border-t border-border shadow-lg">
-        <div 
-          ref={navRef}
-          className="relative flex items-center justify-around h-[72px] max-w-lg mx-auto px-2"
-        >
-          {/* Animated floating indicator */}
-          <div
-            className="absolute top-2 h-14 bg-primary rounded-2xl shadow-orange transition-all duration-500 ease-out"
-            style={{
-              left: `${indicatorStyle.left}px`,
-              width: `${indicatorStyle.width}px`,
-              transform: 'translateZ(0)',
-            }}
-          />
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border shadow-lg" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <div 
+        ref={navRef}
+        className="relative flex items-center justify-around h-16 max-w-lg mx-auto px-2"
+      >
+        {/* Animated indicator */}
+        <div
+          className="absolute top-1 h-[calc(100%-8px)] bg-primary rounded-xl shadow-orange transition-all duration-500 ease-out"
+          style={{
+            left: `${indicatorStyle.left}px`,
+            width: `${indicatorStyle.width}px`,
+            transform: 'translateZ(0)',
+          }}
+        />
 
-          {navItems.map((item, index) => {
-            const isActive = activeIndex === index;
+        {navItems.map((item, index) => {
+          const isActive = activeIndex === index;
 
-            return (
-              <button
-                key={item.to}
-                ref={(el) => (itemRefs.current[index] = el)}
-                onClick={() => navigate(item.to)}
+          return (
+            <button
+              key={item.to}
+              ref={(el) => (itemRefs.current[index] = el)}
+              onClick={() => navigate(item.to)}
+              className={cn(
+                "relative z-10 flex flex-col items-center justify-center w-16 h-[calc(100%-8px)] rounded-xl transition-all duration-300",
+                isActive
+                  ? "text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <item.icon 
                 className={cn(
-                  "relative z-10 flex flex-col items-center justify-center w-[72px] h-14 rounded-2xl transition-all duration-300",
-                  isActive
-                    ? "text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                  "w-5 h-5 transition-transform duration-300",
+                  isActive && "scale-110"
+                )} 
+              />
+              <span 
+                className={cn(
+                  "text-[10px] font-medium mt-0.5 transition-all duration-300",
+                  isActive ? "opacity-100" : "opacity-70"
                 )}
               >
-                <item.icon 
-                  className={cn(
-                    "w-5 h-5 transition-transform duration-300",
-                    isActive && "scale-110"
-                  )} 
-                />
-                <span 
-                  className={cn(
-                    "text-[10px] font-medium mt-1 transition-all duration-300",
-                    isActive ? "opacity-100" : "opacity-70"
-                  )}
-                >
-                  {item.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </nav>
   );

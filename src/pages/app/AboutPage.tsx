@@ -42,14 +42,24 @@ const AboutPage = () => {
         {/* Links */}
         <Card className="shadow-card border-0">
           <CardContent className="p-0 divide-y divide-border">
-            <button className="w-full flex items-center justify-between p-4 hover:bg-accent/50 transition-colors">
+            <a 
+              href="https://borntoblog.netlify.app/terms" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-between p-4 hover:bg-accent/50 transition-colors"
+            >
               <span className="font-medium">Terms of Service</span>
-              <ExternalLink className="w-4 h-4 text-muted-foreground" />
-            </button>
-            <button className="w-full flex items-center justify-between p-4 hover:bg-accent/50 transition-colors">
+              <ExternalLink className="w-4 h-4 text-primary" />
+            </a>
+            <a 
+              href="https://borntoblog.netlify.app/privacy" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="w-full flex items-center justify-between p-4 hover:bg-accent/50 transition-colors"
+            >
               <span className="font-medium">Privacy Policy</span>
-              <ExternalLink className="w-4 h-4 text-muted-foreground" />
-            </button>
+              <ExternalLink className="w-4 h-4 text-primary" />
+            </a>
             <button className="w-full flex items-center justify-between p-4 hover:bg-accent/50 transition-colors">
               <span className="font-medium">Open Source Licenses</span>
               <ExternalLink className="w-4 h-4 text-muted-foreground" />
