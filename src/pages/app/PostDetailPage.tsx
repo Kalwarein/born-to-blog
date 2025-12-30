@@ -72,6 +72,7 @@ const PostDetailPage = () => {
   const [likesCount, setLikesCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [authorName, setAuthorName] = useState("Born to Blog");
+  const [publisherId, setPublisherId] = useState<string | null>(null);
 
   // Store session ID
   useEffect(() => {
@@ -133,6 +134,20 @@ const PostDetailPage = () => {
   };
 
   const fetchAuthorName = async (authorId: string) => {
+    // First try to get the publisher profile
+    const { data: pubData } = await supabase
+      .from("publishers")
+      .select("id, name")
+      .eq("admin_id", authorId)
+      .maybeSingle();
+    
+    if (pubData) {
+      setAuthorName(pubData.name || "Born to Blog");
+      setPublisherId(pubData.id);
+      return;
+    }
+    
+    // Fallback to profile name
     const { data } = await supabase
       .from("profiles")
       .select("name")
@@ -380,12 +395,16 @@ const PostDetailPage = () => {
 
         {/* Meta Info */}
         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6 pb-6 border-b border-border">
-          <div className="flex items-center gap-2">
+          <button 
+            onClick={() => publisherId && navigate(`/publisher/${publisherId}`)}
+            className="flex items-center gap-2 hover:text-primary transition-colors"
+            disabled={!publisherId}
+          >
             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
               <User className="w-4 h-4 text-primary-foreground" />
             </div>
             <span className="font-medium">{authorName}</span>
-          </div>
+          </button>
           <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
           <span className="flex items-center gap-1">
             <Clock className="w-4 h-4" />

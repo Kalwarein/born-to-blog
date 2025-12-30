@@ -130,7 +130,7 @@ const AdminNotifications = () => {
               onChange={(e) => setFormData((prev) => ({ ...prev, message: e.target.value }))}
               rows={3}
             />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Select
                 value={formData.link_type}
                 onValueChange={(value) => setFormData((prev) => ({ ...prev, link_type: value }))}
@@ -138,7 +138,7 @@ const AdminNotifications = () => {
                 <SelectTrigger>
                   <SelectValue placeholder="Link type (optional)" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover border border-border">
                   <SelectItem value="post">Post</SelectItem>
                   <SelectItem value="category">Category</SelectItem>
                   <SelectItem value="announcement">Announcement</SelectItem>

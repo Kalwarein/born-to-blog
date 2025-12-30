@@ -462,9 +462,9 @@ const AdminPosts = () => {
       <div className="space-y-4">
         {posts.map((post) => (
           <Card key={post.id} className="overflow-hidden">
-            <div className="flex">
+            <div className="flex flex-col sm:flex-row">
               {post.image_url ? (
-                <div className="w-32 h-32 flex-shrink-0 relative">
+                <div className="w-full sm:w-32 h-40 sm:h-32 flex-shrink-0 relative">
                   <img
                     src={post.image_url}
                     alt={post.title}
@@ -478,7 +478,7 @@ const AdminPosts = () => {
                   )}
                 </div>
               ) : (
-                <div className="w-32 h-32 flex-shrink-0 bg-muted flex items-center justify-center relative">
+                <div className="w-full sm:w-32 h-24 sm:h-32 flex-shrink-0 bg-muted flex items-center justify-center relative">
                   <FileText className="w-8 h-8 text-muted-foreground" />
                   {post.breaking && (
                     <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 bg-destructive text-destructive-foreground rounded-full text-[10px] font-bold">
@@ -487,9 +487,9 @@ const AdminPosts = () => {
                   )}
                 </div>
               )}
-              <div className="flex-1 p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
+              <div className="flex-1 p-4 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <Badge variant="outline" className={cn("text-xs capitalize", getTypeColor(post.post_type))}>
                         {post.post_type}
@@ -502,30 +502,25 @@ const AdminPosts = () => {
                           Featured
                         </Badge>
                       )}
-                      {post.breaking && (
-                        <Badge variant="outline" className="text-xs bg-destructive/10 text-destructive border-destructive/20">
-                          Breaking
-                        </Badge>
-                      )}
                     </div>
-                    <h3 className="font-semibold text-foreground line-clamp-1">
+                    <h3 className="font-semibold text-foreground line-clamp-2 break-words">
                       {post.title}
                     </h3>
                     {post.subtitle && (
-                      <p className="text-xs text-muted-foreground line-clamp-1">{post.subtitle}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1 break-words">{post.subtitle}</p>
                     )}
-                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground flex-wrap">
                       <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
+                        <Clock className="w-3 h-3 flex-shrink-0" />
                         {post.reading_time || 1} min
                       </span>
                       <span className="flex items-center gap-1">
-                        <Eye className="w-3 h-3" />
+                        <Eye className="w-3 h-3 flex-shrink-0" />
                         {post.view_count || 0} views
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <Button
                       variant="ghost"
                       size="icon"

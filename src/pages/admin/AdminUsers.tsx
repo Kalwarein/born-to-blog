@@ -70,9 +70,9 @@ const AdminUsers = () => {
         {users.map((user) => (
           <Card key={user.id}>
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
                     {user.avatar_url ? (
                       <img
                         src={user.avatar_url}
@@ -83,18 +83,18 @@ const AdminUsers = () => {
                       <User className="w-6 h-6 text-primary-foreground" />
                     )}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-foreground">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-foreground truncate">
                         {user.name || "Unnamed User"}
                       </h3>
                       {user.banned && (
-                        <span className="text-xs font-semibold text-destructive bg-destructive/10 px-2 py-0.5 rounded">
+                        <span className="text-xs font-semibold text-destructive bg-destructive/10 px-2 py-0.5 rounded flex-shrink-0">
                           Banned
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                    <p className="text-sm text-muted-foreground truncate">{user.email}</p>
                     <p className="text-xs text-muted-foreground">
                       Joined{" "}
                       {formatDistanceToNow(new Date(user.created_at), {
@@ -107,7 +107,7 @@ const AdminUsers = () => {
                   variant={user.banned ? "outline" : "destructive"}
                   size="sm"
                   onClick={() => toggleBan(user.user_id, user.banned)}
-                  className="gap-2"
+                  className="gap-2 flex-shrink-0 self-end sm:self-auto"
                 >
                   {user.banned ? (
                     <>

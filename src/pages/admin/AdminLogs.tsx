@@ -56,11 +56,14 @@ const AdminLogs = () => {
                 <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center flex-shrink-0">
                   <ScrollText className="w-5 h-5 text-secondary-foreground" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground">{log.action}</p>
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <p className="font-medium text-foreground break-words">{log.action}</p>
                   {log.details && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {JSON.stringify(log.details)}
+                    <p className="text-sm text-muted-foreground mt-1 break-all overflow-hidden">
+                      {typeof log.details === 'string' 
+                        ? log.details 
+                        : JSON.stringify(log.details, null, 2).slice(0, 200)}
+                      {JSON.stringify(log.details).length > 200 && '...'}
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground mt-2">
