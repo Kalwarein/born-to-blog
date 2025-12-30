@@ -34,13 +34,10 @@ const Auth = () => {
 
   useEffect(() => {
     if (!loading && user) {
-      if (isAdmin) {
-        navigate("/admin");
-      } else {
-        navigate("/app");
-      }
+      // All users (including admins) go to /app first
+      navigate("/app");
     }
-  }, [user, isAdmin, loading, navigate]);
+  }, [user, loading, navigate]);
 
   const validateForm = () => {
     try {
