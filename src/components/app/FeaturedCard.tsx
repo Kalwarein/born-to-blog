@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Eye, Clock, Zap } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Post {
   id: string;
@@ -11,7 +13,14 @@ interface Post {
   reading_time: number;
   view_count: number;
   created_at: string;
+  author_id?: string;
   breaking?: boolean;
+}
+
+interface Publisher {
+  id: string;
+  name: string;
+  logo_url: string | null;
 }
 
 interface FeaturedCardProps {
@@ -20,6 +29,25 @@ interface FeaturedCardProps {
 
 const FeaturedCard = ({ post }: FeaturedCardProps) => {
   const navigate = useNavigate();
+  const [publisher, setPublisher] = useState<Publisher | null>(null);
+
+  useEffect(() => {
+    if (post.author_id) {
+      fetchPublisher();
+    }
+  }, [post.author_id]);
+
+  const fetchPublisher = async () => {
+    const { data } = await supabase
+      .from("publishers")
+      .select("id, name, logo_url")
+      .eq("admin_id", post.author_id)
+      .maybeSingle();
+    
+    if (data) {
+      setPublisher(data);
+    }
+  };
 
   const postTypeColors: Record<string, string> = {
     news: "bg-blue-500",
@@ -32,7 +60,16 @@ const FeaturedCard = ({ post }: FeaturedCardProps) => {
     opinion: "bg-orange-500",
     sports: "bg-lime-500",
     business: "bg-indigo-500",
+    lifestyle: "bg-fuchsia-500",
+    health: "bg-teal-500",
     post: "bg-primary",
+  };
+
+  const handlePublisherClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (publisher) {
+      navigate(`/publisher/${publisher.id}`);
+    }
   };
 
   return (
@@ -75,18 +112,40 @@ const FeaturedCard = ({ post }: FeaturedCardProps) => {
           <h3 className="text-white font-bold text-lg leading-tight line-clamp-2 mb-2">
             {post.title}
           </h3>
-          <div className="flex items-center gap-3 text-white/80 text-xs">
-            <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {post.reading_time} min
-            </span>
-            <span className="flex items-center gap-1">
-              <Eye className="w-3 h-3" />
-              {post.view_count || 0}
-            </span>
-            <span>
-              {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-            </span>
+          <div className="flex items-center justify-between">
+            {/* Publisher Info */}
+            {publisher && (
+              <button
+                onClick={handlePublisherClick}
+                className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+              >
+                {publisher.logo_url ? (
+                  <img 
+                    src={publisher.logo_url} 
+                    alt={publisher.name}
+                    className="w-5 h-5 rounded-full object-cover border border-white/30"
+                  />
+                ) : (
+                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                    <span className="text-[10px] text-white font-bold">
+                      {publisher.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+                <span className="text-white/90 text-xs truncate max-w-[100px]">{publisher.name}</span>
+              </button>
+            )}
+            
+            <div className="flex items-center gap-3 text-white/80 text-xs">
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {post.reading_time} min
+              </span>
+              <span className="flex items-center gap-1">
+                <Eye className="w-3 h-3" />
+                {post.view_count || 0}
+              </span>
+            </div>
           </div>
         </div>
       </div>

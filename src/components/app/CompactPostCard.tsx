@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Clock, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Post {
   id: string;
@@ -11,6 +13,13 @@ interface Post {
   reading_time: number;
   view_count: number;
   created_at: string;
+  author_id?: string;
+}
+
+interface Publisher {
+  id: string;
+  name: string;
+  logo_url: string | null;
 }
 
 interface CompactPostCardProps {
@@ -19,12 +28,47 @@ interface CompactPostCardProps {
 
 const CompactPostCard = ({ post }: CompactPostCardProps) => {
   const navigate = useNavigate();
+  const [publisher, setPublisher] = useState<Publisher | null>(null);
+
+  useEffect(() => {
+    if (post.author_id) {
+      fetchPublisher();
+    }
+  }, [post.author_id]);
+
+  const fetchPublisher = async () => {
+    const { data } = await supabase
+      .from("publishers")
+      .select("id, name, logo_url")
+      .eq("admin_id", post.author_id)
+      .maybeSingle();
+    
+    if (data) {
+      setPublisher(data);
+    }
+  };
 
   const postTypeColors: Record<string, string> = {
-    news: "text-blue-600 bg-blue-50",
-    blog: "text-green-600 bg-green-50",
-    announcement: "text-purple-600 bg-purple-50",
+    news: "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-950",
+    blog: "text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-950",
+    announcement: "text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-950",
+    politics: "text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-950",
+    tech: "text-cyan-600 bg-cyan-50 dark:text-cyan-400 dark:bg-cyan-950",
+    entertainment: "text-pink-600 bg-pink-50 dark:text-pink-400 dark:bg-pink-950",
+    world: "text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950",
+    opinion: "text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-950",
+    sports: "text-lime-600 bg-lime-50 dark:text-lime-400 dark:bg-lime-950",
+    business: "text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-950",
+    lifestyle: "text-fuchsia-600 bg-fuchsia-50 dark:text-fuchsia-400 dark:bg-fuchsia-950",
+    health: "text-teal-600 bg-teal-50 dark:text-teal-400 dark:bg-teal-950",
     post: "text-primary bg-secondary",
+  };
+
+  const handlePublisherClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (publisher) {
+      navigate(`/publisher/${publisher.id}`);
+    }
   };
 
   return (
@@ -59,15 +103,40 @@ const CompactPostCard = ({ post }: CompactPostCardProps) => {
           </h3>
         </div>
         
-        <div className="flex items-center gap-3 text-muted-foreground text-xs mt-2">
-          <span className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {post.reading_time} min
-          </span>
-          <span className="flex items-center gap-1">
-            <Eye className="w-3 h-3" />
-            {post.view_count || 0}
-          </span>
+        <div className="flex items-center justify-between text-xs mt-2">
+          {/* Publisher Info */}
+          {publisher && (
+            <button
+              onClick={handlePublisherClick}
+              className="flex items-center gap-1.5 hover:text-primary transition-colors"
+            >
+              {publisher.logo_url ? (
+                <img 
+                  src={publisher.logo_url} 
+                  alt={publisher.name}
+                  className="w-4 h-4 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                  <span className="text-[8px] text-primary-foreground font-bold">
+                    {publisher.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
+              <span className="text-muted-foreground truncate max-w-[80px]">{publisher.name}</span>
+            </button>
+          )}
+          
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {post.reading_time} min
+            </span>
+            <span className="flex items-center gap-1">
+              <Eye className="w-3 h-3" />
+              {post.view_count || 0}
+            </span>
+          </div>
         </div>
       </div>
     </button>
