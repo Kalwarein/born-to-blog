@@ -1,11 +1,17 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import BottomNavigation from "@/components/app/BottomNavigation";
 
 const AppLayout = () => {
+  const location = useLocation();
+  
+  // Hide bottom navigation on specific pages
+  const hideBottomNav = location.pathname.includes("/app/post/") || 
+                        location.pathname === "/app/notifications";
+
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className={`min-h-screen bg-background ${hideBottomNav ? "" : "pb-20"}`}>
       <Outlet />
-      <BottomNavigation />
+      {!hideBottomNav && <BottomNavigation />}
     </div>
   );
 };

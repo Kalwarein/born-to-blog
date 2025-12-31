@@ -21,7 +21,8 @@ interface Post {
   view_count: number;
 }
 
-const CATEGORIES = ["All", "News", "Blog", "Tech", "Politics", "World", "Entertainment", "Opinion", "Sports", "Business", "Lifestyle", "Health"];
+// Article-focused categories for Feed tab (long-form content)
+const ARTICLE_CATEGORIES = ["All", "Blog", "Opinion", "Lifestyle", "Announcement"];
 
 const FeedPage = () => {
   const [searchParams] = useSearchParams();
@@ -40,18 +41,31 @@ const FeedPage = () => {
     const from = pageNum * POSTS_PER_PAGE;
     const to = from + POSTS_PER_PAGE - 1;
 
+    // Only show articles/blogs in Feed (long-form content)
     let query = supabase
       .from("posts")
       .select("*")
       .eq("status", "published")
+      .in("post_type", ["blog", "opinion", "lifestyle", "announcement", "post"])
       .order("created_at", { ascending: false });
 
     if (search.trim()) {
-      query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
+      query = supabase
+        .from("posts")
+        .select("*")
+        .eq("status", "published")
+        .in("post_type", ["blog", "opinion", "lifestyle", "announcement", "post"])
+        .or(`title.ilike.%${search}%,content.ilike.%${search}%`)
+        .order("created_at", { ascending: false });
     }
 
     if (category !== "All") {
-      query = query.eq("post_type", category.toLowerCase() as "news" | "blog" | "announcement" | "post");
+      query = supabase
+        .from("posts")
+        .select("*")
+        .eq("status", "published")
+        .eq("post_type", category.toLowerCase() as any)
+        .order("created_at", { ascending: false });
     }
 
     const { data, error } = await query.range(from, to);
@@ -96,7 +110,7 @@ const FeedPage = () => {
       {/* Category Chips */}
       <div className="px-4 py-3 border-b border-border">
         <CategoryChips
-          categories={CATEGORIES}
+          categories={ARTICLE_CATEGORIES}
           selected={selectedCategory}
           onSelect={setSelectedCategory}
         />
@@ -148,7 +162,7 @@ const FeedPage = () => {
             ) : (
               <>
                 <Newspaper className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-foreground mb-2">No posts yet</h2>
+                <h2 className="text-xl font-semibold text-foreground mb-2">No articles yet</h2>
                 <p className="text-muted-foreground">Check back later for new content!</p>
               </>
             )}

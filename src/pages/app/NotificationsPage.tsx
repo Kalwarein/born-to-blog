@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowLeft, Bell, ExternalLink, FileText, Tag } from "lucide-react";
+import { ArrowLeft, Bell, ExternalLink, FileText, Tag, Check } from "lucide-react";
 
 interface Notification {
   id: string;
@@ -12,24 +13,60 @@ interface Notification {
   link_type: string | null;
   link_value: string | null;
   created_at: string;
+  isRead?: boolean;
 }
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [user]);
 
   const fetchNotifications = async () => {
-    const { data } = await supabase
+    // Fetch all notifications
+    const { data: notificationsData } = await supabase
       .from("notifications")
       .select("*")
       .order("created_at", { ascending: false });
 
-    setNotifications((data as Notification[]) || []);
+    if (!notificationsData) {
+      setLoading(false);
+      return;
+    }
+
+    // If user is logged in, fetch their read status
+    if (user) {
+      const { data: readData } = await supabase
+        .from("user_notification_reads")
+        .select("notification_id")
+        .eq("user_id", user.id);
+
+      const readIds = new Set(readData?.map(r => r.notification_id) || []);
+
+      const notificationsWithReadStatus = notificationsData.map(n => ({
+        ...n,
+        isRead: readIds.has(n.id)
+      }));
+
+      setNotifications(notificationsWithReadStatus as Notification[]);
+
+      // Mark all unread notifications as read
+      const unreadNotifications = notificationsData.filter(n => !readIds.has(n.id));
+      if (unreadNotifications.length > 0) {
+        const inserts = unreadNotifications.map(n => ({
+          user_id: user.id,
+          notification_id: n.id
+        }));
+        await supabase.from("user_notification_reads").insert(inserts);
+      }
+    } else {
+      setNotifications(notificationsData as Notification[]);
+    }
+
     setLoading(false);
   };
 
@@ -42,6 +79,9 @@ const NotificationsPage = () => {
         break;
       case "category":
         navigate(`/app/feed?category=${notification.link_value}`);
+        break;
+      case "publisher":
+        navigate(`/publisher/${notification.link_value}`);
         break;
       case "external":
         window.open(notification.link_value, "_blank");
@@ -73,8 +113,8 @@ const NotificationsPage = () => {
   }
 
   return (
-    <div className="min-h-screen pb-20">
-      {/* Header */}
+    <div className="min-h-screen pb-4">
+      {/* Header - No bottom tab bar, just back button */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="rounded-full">
@@ -92,11 +132,21 @@ const NotificationsPage = () => {
               <button
                 key={notification.id}
                 onClick={() => handleNotificationClick(notification)}
-                className="w-full text-left p-4 bg-card rounded-xl shadow-card hover:shadow-md transition-all duration-200"
+                className={`w-full text-left p-4 rounded-xl shadow-card hover:shadow-md transition-all duration-200 ${
+                  notification.isRead 
+                    ? "bg-card opacity-70" 
+                    : "bg-card border-l-4 border-l-primary"
+                }`}
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Bell className="w-5 h-5 text-primary" />
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    notification.isRead ? "bg-muted" : "bg-primary/10"
+                  }`}>
+                    {notification.isRead ? (
+                      <Check className="w-5 h-5 text-muted-foreground" />
+                    ) : (
+                      <Bell className="w-5 h-5 text-primary" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-foreground mb-1">{notification.title}</h3>

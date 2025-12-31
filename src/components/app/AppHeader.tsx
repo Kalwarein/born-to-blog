@@ -26,10 +26,30 @@ const AppHeader = ({ showSearch = false, searchValue = "", onSearchChange, title
   }, [user]);
 
   const fetchNotificationCount = async () => {
-    const { count } = await supabase
+    // Get total notifications count
+    const { data: allNotifications } = await supabase
       .from("notifications")
-      .select("*", { count: "exact", head: true });
-    setUnreadCount(count || 0);
+      .select("id");
+
+    if (!allNotifications) {
+      setUnreadCount(0);
+      return;
+    }
+
+    // If user is logged in, get their read notifications
+    if (user) {
+      const { data: readNotifications } = await supabase
+        .from("user_notification_reads")
+        .select("notification_id")
+        .eq("user_id", user.id);
+
+      const readIds = new Set(readNotifications?.map(r => r.notification_id) || []);
+      const unreadNotifications = allNotifications.filter(n => !readIds.has(n.id));
+      setUnreadCount(unreadNotifications.length);
+    } else {
+      // For non-logged in users, show total count
+      setUnreadCount(allNotifications.length);
+    }
   };
 
   const fetchUserName = async () => {
