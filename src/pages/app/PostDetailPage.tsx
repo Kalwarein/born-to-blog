@@ -22,6 +22,7 @@ import {
   Pause,
   Play,
   Zap,
+  ExternalLink,
 } from "lucide-react";
 import CompactPostCard from "@/components/app/CompactPostCard";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,9 @@ interface Post {
   author_id: string;
   reading_time: number;
   view_count: number;
+  is_external?: boolean;
+  source_name?: string | null;
+  external_url?: string | null;
 }
 
 interface Comment {
@@ -395,22 +399,46 @@ const PostDetailPage = () => {
 
         {/* Meta Info */}
         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6 pb-6 border-b border-border">
-          <button 
-            onClick={() => publisherId && navigate(`/publisher/${publisherId}`)}
-            className="flex items-center gap-2 hover:text-primary transition-colors"
-            disabled={!publisherId}
-          >
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-primary-foreground" />
+          {post.is_external && post.source_name ? (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <span className="text-primary-foreground text-sm font-bold">
+                  {post.source_name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <span className="font-medium">Source: {post.source_name}</span>
             </div>
-            <span className="font-medium">{authorName}</span>
-          </button>
+          ) : (
+            <button 
+              onClick={() => publisherId && navigate(`/publisher/${publisherId}`)}
+              className="flex items-center gap-2 hover:text-primary transition-colors"
+              disabled={!publisherId}
+            >
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-primary-foreground" />
+              </div>
+              <span className="font-medium">{authorName}</span>
+            </button>
+          )}
           <span>{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
           <span className="flex items-center gap-1">
             <Clock className="w-4 h-4" />
             {post.reading_time} min read
           </span>
         </div>
+
+        {/* Read Original Source Button for External News */}
+        {post.is_external && post.external_url && (
+          <a
+            href={post.external_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 mb-6 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm"
+          >
+            <ExternalLink className="w-4 h-4" />
+            Read original source
+          </a>
+        )}
 
         {/* Read Aloud Button */}
         {isSupported && (

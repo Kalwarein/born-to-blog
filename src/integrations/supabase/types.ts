@@ -168,11 +168,14 @@ export type Database = {
           content: string
           created_at: string
           excerpt: string | null
+          external_url: string | null
           featured: boolean | null
           id: string
           image_url: string | null
+          is_external: boolean | null
           post_type: Database["public"]["Enums"]["post_type"]
           reading_time: number | null
+          source_name: string | null
           status: string | null
           subtitle: string | null
           title: string
@@ -185,11 +188,14 @@ export type Database = {
           content: string
           created_at?: string
           excerpt?: string | null
+          external_url?: string | null
           featured?: boolean | null
           id?: string
           image_url?: string | null
+          is_external?: boolean | null
           post_type?: Database["public"]["Enums"]["post_type"]
           reading_time?: number | null
+          source_name?: string | null
           status?: string | null
           subtitle?: string | null
           title: string
@@ -202,11 +208,14 @@ export type Database = {
           content?: string
           created_at?: string
           excerpt?: string | null
+          external_url?: string | null
           featured?: boolean | null
           id?: string
           image_url?: string | null
+          is_external?: boolean | null
           post_type?: Database["public"]["Enums"]["post_type"]
           reading_time?: number | null
+          source_name?: string | null
           status?: string | null
           subtitle?: string | null
           title?: string
