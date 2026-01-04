@@ -103,27 +103,7 @@ Deno.serve(async (req) => {
       const wordCount = (article.content || article.description || '').split(/\s+/).length
       const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
-      // Get system user for external news (or use a default UUID)
-      // We'll use a fixed UUID for external news author
-      const externalAuthorId = '00000000-0000-0000-0000-000000000000'
-
-      // First, ensure we have this system user in profiles
-      const { data: systemProfile } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('user_id', externalAuthorId)
-        .maybeSingle()
-
-      if (!systemProfile) {
-        // Create system profile for external news
-        await supabase.from('profiles').insert({
-          user_id: externalAuthorId,
-          name: 'External News',
-          email: 'external@borntoblog.com',
-        })
-      }
-
-      // Insert the article
+      // Insert the article with null author_id for external posts
       const { error: insertError } = await supabase.from('posts').insert({
         title: article.title,
         subtitle: article.description?.substring(0, 200) || null,
@@ -136,7 +116,7 @@ Deno.serve(async (req) => {
         post_type: 'news',
         status: 'published',
         reading_time: readingTime,
-        author_id: externalAuthorId,
+        author_id: null,
         created_at: article.publishedAt,
       })
 

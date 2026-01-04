@@ -44,11 +44,6 @@ const HomePage = () => {
   const fetchPosts = useCallback(async () => {
     setLoading(true);
 
-    // Trigger news fetch from edge function (fire and forget)
-    supabase.functions.invoke('fetch-news').catch(err => {
-      console.log('Background news fetch:', err?.message || 'completed');
-    });
-
     // Fetch breaking news first (only news types)
     const { data: breaking } = await supabase
       .from("posts")

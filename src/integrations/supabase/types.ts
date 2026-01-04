@@ -163,7 +163,7 @@ export type Database = {
       }
       posts: {
         Row: {
-          author_id: string
+          author_id: string | null
           breaking: boolean | null
           content: string
           created_at: string
@@ -183,7 +183,7 @@ export type Database = {
           view_count: number | null
         }
         Insert: {
-          author_id: string
+          author_id?: string | null
           breaking?: boolean | null
           content: string
           created_at?: string
@@ -203,7 +203,7 @@ export type Database = {
           view_count?: number | null
         }
         Update: {
-          author_id?: string
+          author_id?: string | null
           breaking?: boolean | null
           content?: string
           created_at?: string
