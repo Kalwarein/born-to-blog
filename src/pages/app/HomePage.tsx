@@ -23,6 +23,9 @@ interface Post {
   reading_time: number;
   view_count: number;
   status: string;
+  is_external?: boolean;
+  source_name?: string | null;
+  external_url?: string | null;
 }
 
 // News-only categories for Home tab
@@ -40,6 +43,11 @@ const HomePage = () => {
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
+
+    // Trigger news fetch from edge function (fire and forget)
+    supabase.functions.invoke('fetch-news').catch(err => {
+      console.log('Background news fetch:', err?.message || 'completed');
+    });
 
     // Fetch breaking news first (only news types)
     const { data: breaking } = await supabase

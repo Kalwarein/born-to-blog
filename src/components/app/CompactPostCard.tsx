@@ -14,6 +14,9 @@ interface Post {
   view_count: number;
   created_at: string;
   author_id?: string;
+  is_external?: boolean;
+  source_name?: string | null;
+  external_url?: string | null;
 }
 
 interface Publisher {
@@ -31,10 +34,11 @@ const CompactPostCard = ({ post }: CompactPostCardProps) => {
   const [publisher, setPublisher] = useState<Publisher | null>(null);
 
   useEffect(() => {
-    if (post.author_id) {
+    // Don't fetch publisher for external posts
+    if (post.author_id && !post.is_external) {
       fetchPublisher();
     }
-  }, [post.author_id]);
+  }, [post.author_id, post.is_external]);
 
   const fetchPublisher = async () => {
     const { data } = await supabase
@@ -104,8 +108,19 @@ const CompactPostCard = ({ post }: CompactPostCardProps) => {
         </div>
         
         <div className="flex items-center justify-between text-xs mt-2">
-          {/* Publisher Info */}
-          {publisher && (
+          {/* Publisher/Source Info */}
+          {post.is_external && post.source_name ? (
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-[8px] text-primary-foreground font-bold">
+                  {post.source_name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <span className="text-muted-foreground truncate max-w-[80px] text-xs">
+                {post.source_name}
+              </span>
+            </div>
+          ) : publisher && (
             <button
               onClick={handlePublisherClick}
               className="flex items-center gap-1.5 hover:text-primary transition-colors"

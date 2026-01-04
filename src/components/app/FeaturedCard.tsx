@@ -15,6 +15,8 @@ interface Post {
   created_at: string;
   author_id?: string;
   breaking?: boolean;
+  is_external?: boolean;
+  source_name?: string | null;
 }
 
 interface Publisher {
@@ -32,10 +34,11 @@ const FeaturedCard = ({ post }: FeaturedCardProps) => {
   const [publisher, setPublisher] = useState<Publisher | null>(null);
 
   useEffect(() => {
-    if (post.author_id) {
+    // Don't fetch publisher for external posts
+    if (post.author_id && !post.is_external) {
       fetchPublisher();
     }
-  }, [post.author_id]);
+  }, [post.author_id, post.is_external]);
 
   const fetchPublisher = async () => {
     const { data } = await supabase
@@ -113,8 +116,19 @@ const FeaturedCard = ({ post }: FeaturedCardProps) => {
             {post.title}
           </h3>
           <div className="flex items-center justify-between">
-            {/* Publisher Info */}
-            {publisher && (
+            {/* Publisher/Source Info */}
+            {post.is_external && post.source_name ? (
+              <div className="flex items-center gap-1.5">
+                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                  <span className="text-[10px] text-white font-bold">
+                    {post.source_name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <span className="text-white/90 text-xs truncate max-w-[100px]">
+                  Source: {post.source_name}
+                </span>
+              </div>
+            ) : publisher && (
               <button
                 onClick={handlePublisherClick}
                 className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
