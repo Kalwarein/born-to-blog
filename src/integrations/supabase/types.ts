@@ -415,8 +415,10 @@ export type Database = {
           breaking_news_enabled: boolean | null
           created_at: string
           dark_mode: boolean | null
+          font_family: string | null
           font_size: string | null
           id: string
+          line_height: string | null
           notifications_enabled: boolean | null
           updated_at: string
           user_id: string
@@ -425,8 +427,10 @@ export type Database = {
           breaking_news_enabled?: boolean | null
           created_at?: string
           dark_mode?: boolean | null
+          font_family?: string | null
           font_size?: string | null
           id?: string
+          line_height?: string | null
           notifications_enabled?: boolean | null
           updated_at?: string
           user_id: string
@@ -435,8 +439,10 @@ export type Database = {
           breaking_news_enabled?: boolean | null
           created_at?: string
           dark_mode?: boolean | null
+          font_family?: string | null
           font_size?: string | null
           id?: string
+          line_height?: string | null
           notifications_enabled?: boolean | null
           updated_at?: string
           user_id?: string
@@ -448,6 +454,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_external_news: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
