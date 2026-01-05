@@ -26,6 +26,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import CompactPostCard from "@/components/app/CompactPostCard";
+import ReadingProgressBar from "@/components/app/ReadingProgressBar";
 import { Input } from "@/components/ui/input";
 
 interface Post {
@@ -89,7 +90,6 @@ const PostDetailPage = () => {
     if (id) {
       fetchPost();
       fetchComments();
-      fetchSuggestedPosts();
       recordView();
       if (user) {
         checkLikeStatus();
@@ -99,6 +99,13 @@ const PostDetailPage = () => {
     // Stop TTS when leaving page
     return () => stop();
   }, [id, user]);
+
+  // Fetch suggested posts when post is loaded
+  useEffect(() => {
+    if (post) {
+      fetchSuggestedPosts();
+    }
+  }, [post?.id, post?.post_type]);
 
   const recordView = async () => {
     if (!id) return;
@@ -179,15 +186,59 @@ const PostDetailPage = () => {
   };
 
   const fetchSuggestedPosts = async () => {
-    const { data } = await supabase
+    if (!post) return;
+    
+    // Extract keywords from current post title for similarity matching
+    const titleWords = post.title
+      .toLowerCase()
+      .replace(/[^\w\s]/g, '')
+      .split(/\s+/)
+      .filter(word => word.length > 3); // Only words with 4+ characters
+
+    // First try to find posts with the same post_type
+    const { data: sameTypePosts } = await supabase
       .from("posts")
       .select("*")
       .neq("id", id)
       .eq("status", "published")
-      .order("view_count", { ascending: false })
-      .limit(4);
+      .eq("post_type", post.post_type as any)
+      .order("created_at", { ascending: false })
+      .limit(10);
 
-    if (data) setSuggestedPosts(data as Post[]);
+    if (sameTypePosts && sameTypePosts.length > 0) {
+      // Score posts by keyword similarity
+      const scoredPosts = sameTypePosts.map((p: Post) => {
+        const pTitleWords = p.title.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/);
+        const pContentWords = (p.content || '').toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/);
+        const allWords = [...pTitleWords, ...pContentWords];
+        
+        let score = 0;
+        titleWords.forEach(word => {
+          if (allWords.includes(word)) score += 2; // Title match = 2 points
+          if (pTitleWords.includes(word)) score += 3; // Title-to-title match = 3 extra points
+        });
+        
+        // Bonus for same source
+        if (post.source_name && p.source_name === post.source_name) score += 5;
+        
+        return { ...p, score };
+      });
+
+      // Sort by score and take top 4
+      scoredPosts.sort((a, b) => b.score - a.score);
+      setSuggestedPosts(scoredPosts.slice(0, 4) as Post[]);
+    } else {
+      // Fallback: fetch any recent posts
+      const { data: recentPosts } = await supabase
+        .from("posts")
+        .select("*")
+        .neq("id", id)
+        .eq("status", "published")
+        .order("created_at", { ascending: false })
+        .limit(4);
+
+      if (recentPosts) setSuggestedPosts(recentPosts as Post[]);
+    }
   };
 
   const checkLikeStatus = async () => {
@@ -330,6 +381,8 @@ const PostDetailPage = () => {
 
   return (
     <div className="min-h-screen pb-24">
+      <ReadingProgressBar />
+      
       {/* Hero Image */}
       <div className="relative">
         {post.image_url && (
