@@ -103,11 +103,22 @@ Deno.serve(async (req) => {
       const wordCount = (article.content || article.description || '').split(/\s+/).length
       const readingTime = Math.max(1, Math.ceil(wordCount / 200))
 
+      // Clean up content - NewsAPI truncates with [+XXX chars] marker
+      let cleanContent = article.content || article.description || ''
+      // Remove the [+XXX chars] truncation marker
+      cleanContent = cleanContent.replace(/\s*\[\+\d+\s*chars?\]$/i, '')
+      // If content is too short after cleaning, use description instead
+      if (cleanContent.length < 100 && article.description) {
+        cleanContent = article.description
+      }
+      // Add note about reading full article
+      cleanContent = cleanContent + '\n\n---\n\nFor the complete article, please visit the original source.'
+
       // Insert the article with null author_id for external posts
       const { error: insertError } = await supabase.from('posts').insert({
         title: article.title,
         subtitle: article.description?.substring(0, 200) || null,
-        content: article.content || article.description || 'Read full article at source.',
+        content: cleanContent,
         excerpt: article.description?.substring(0, 150) || null,
         image_url: article.urlToImage,
         external_url: article.url,
