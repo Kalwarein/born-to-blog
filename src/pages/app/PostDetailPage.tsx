@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { useReadingSettings } from "@/hooks/useReadingSettings";
 import { formatDistanceToNow } from "date-fns";
 import {
   ArrowLeft,
@@ -62,6 +63,7 @@ const PostDetailPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { getContentStyle } = useReadingSettings();
   const { speak, stop, toggle, isPlaying, isPaused, isSupported } = useTextToSpeech();
   const sessionIdRef = useRef<string>(
     sessionStorage.getItem("session_id") || `session_${Date.now()}_${Math.random().toString(36).slice(2)}`
@@ -482,9 +484,12 @@ const PostDetailPage = () => {
 
         {/* Article Content */}
         <div className="prose prose-lg max-w-none">
-          <p className="text-foreground leading-relaxed whitespace-pre-wrap text-base">
+          <div 
+            className="text-foreground whitespace-pre-wrap"
+            style={getContentStyle()}
+          >
             {post.content}
-          </p>
+          </div>
         </div>
 
         {/* Stats & Actions */}
